@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mission Control Dashboard
+
+Real-time Kanban dashboard for the **Isekai Crossover Legion** multi-agent AI system.
+
+![Kanban Board](/docs/assets/screenshots/kanban_board.png)
+
+## Features
+
+- **Kanban Board**: Drag-and-drop task management across 5 columns (Backlog, To Do, In Progress, Review, Done)
+- **Agent Status**: Grid view of all 13 AI agents with real-time status indicators
+- **Activity Feed**: Live stream of agent activities with filtering and statistics
+- **Dark Theme**: Premium Isekai Crossover Legion theme with Code Geass red and Overlord gold accents
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Frontend | Next.js 16 (App Router) |
+| UI | shadcn/ui + Tailwind CSS |
+| Database | Convex (cloud) |
+| Drag & Drop | @dnd-kit |
+| Icons | Lucide React |
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Install dependencies
+npm install
+
+# Set up environment
+cp .env.example .env.local
+# Add your NEXT_PUBLIC_CONVEX_URL
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+mission-control-dashboard/
+├── app/
+│   ├── layout.tsx          # Root + providers
+│   ├── page.tsx            # Kanban (home)
+│   ├── agents/page.tsx     # Agent grid
+│   └── activity/page.tsx   # Activity feed
+├── components/
+│   ├── ui/                 # shadcn components
+│   ├── kanban/             # Board, Column, TaskCard
+│   ├── agents/             # AgentGrid, AgentCard
+│   ├── activity/           # ActivityFeed
+│   └── layout/             # Sidebar, Header
+├── lib/
+│   ├── convex.tsx          # Convex client
+│   ├── types.ts            # TypeScript definitions
+│   └── utils.ts            # shadcn utilities
+└── public/avatars/         # Agent portraits
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Agent Roster
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Layer | Agent | Role |
+|-------|-------|------|
+| Strategic | @lelouch | Supreme Strategist |
+| Secretary | @cc | Chief of Staff |
+| Tactical | @lena | Office Lead |
+| Tactical | @shiroe | Trading Lead |
+| Tactical | @ainz | Personal Lead |
+| Tactical | @meliodas | Deployment Lead |
+| Operational | @killua | Backend Specialist |
+| Operational | @yor | Frontend Specialist |
+| Operational | @rimuru | Data Analyst |
+| Operational | @albedo | Admin Specialist |
+| Operational | @kazuma | QA Specialist |
+| Operational | @senku | Research Specialist |
+| Operational | @demiurge | Security Auditor |
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Push to GitHub
+2. Import to [Vercel](https://vercel.com)
+3. Add environment variable: `NEXT_PUBLIC_CONVEX_URL`
+4. Deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## References
+
+- Backend Reference: `mission-control-reference/`
+- Convex Dashboard: https://dashboard.convex.dev/d/ceaseless-bullfrog-373
