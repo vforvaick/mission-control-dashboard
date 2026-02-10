@@ -1,6 +1,7 @@
-import { mutation } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
-export const seedTasks = mutation({
+export const seedTasks = internalMutation({
     args: {},
     handler: async (ctx) => {
         // Check if tasks already exist
@@ -12,7 +13,7 @@ export const seedTasks = mutation({
 
         // Get boards
         const boards = await ctx.db.query("boards").collect();
-        const boardMap: Record<string, any> = {};
+        const boardMap: Record<string, Id<"boards">> = {};
         for (const b of boards) {
             boardMap[b.slug] = b._id;
         }
@@ -24,7 +25,7 @@ export const seedTasks = mutation({
 
         // Get agents for assignment
         const agents = await ctx.db.query("agents").collect();
-        const agentMap: Record<string, any> = {};
+        const agentMap: Record<string, Id<"agents">> = {};
         for (const a of agents) {
             agentMap[a.handle] = a._id;
         }

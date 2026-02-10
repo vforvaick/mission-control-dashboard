@@ -19,7 +19,7 @@ export const list = query({
                 .withIndex("by_board", (q) => q.eq("boardId", args.boardId!));
         }
 
-        const limit = args.limit ?? 50;
+        const limit = Math.min(args.limit ?? 50, 200);
         return await q.order("desc").take(limit);
     },
 });

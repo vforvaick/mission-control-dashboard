@@ -62,6 +62,10 @@ export const create = mutation({
         dueDate: v.optional(v.number()),
     },
     handler: async (ctx, args) => {
+        if (args.title.length > 200) throw new Error("Title too long (max 200 chars)");
+        if (args.description && args.description.length > 5000) throw new Error("Description too long (max 5000 chars)");
+        if (args.tags && args.tags.length > 20) throw new Error("Too many tags (max 20)");
+
         const existingTasks = await ctx.db
             .query("tasks")
             .withIndex("by_board", (q) => q.eq("boardId", args.boardId))
@@ -175,6 +179,8 @@ export const appendExecutionLog = mutation({
         }),
     },
     handler: async (ctx, args) => {
+        if (args.logEntry.content.length > 10000) throw new Error("Log entry too long (max 10000 chars)");
+
         const task = await ctx.db.get(args.id);
         if (!task) throw new Error("Task not found");
 

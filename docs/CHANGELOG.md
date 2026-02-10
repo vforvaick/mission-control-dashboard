@@ -1,5 +1,32 @@
 # Changelog
 
+## [2026-02-10] - Security & Type Safety Audit Repairs
+### Added
+- **Convex Auth**: Secured dashboard with GitHub OAuth (`@convex-dev/auth`)
+- **Security Headers**: Added CSP, X-Frame-Options, HSTS, etc. to `next.config.ts`
+- **Input Validation**: Added max length checks to `tasks.ts`, `comments.ts`, and `activity.ts` mutations
+- **Auth Guard**: Wrapped application in `AuthGuard` component to enforce login
+
+### Changed
+- **Type Safety**:
+  - Fixed `Agent.layer` union type (`strategic` | `analyst` | `lead` | `specialist`)
+  - Removed all `as any` casts in `agent-grid.tsx`
+  - Fixed `deriveLayer` return type
+- **Security**:
+  - Converted `seed.ts`, `seedTasks.ts`, `migrations.ts` to `internalMutation` (no public access)
+  - Capped `activity.list` query at 200 items
+
+### Verified
+- Build: `npx next build` ✅ (Zero errors)
+- Type Check: `tsc` ✅
+
+### Files Modified
+- `convex/auth.ts`, `convex/http.ts`, `convex/schema.ts`
+- `components/auth/auth-guard.tsx`
+- `app/layout.tsx`
+- `lib/convex.tsx`, `lib/types.ts`
+- All mutations in `convex/` directory
+
 ## [2026-02-10] - Convex Integration (Live Data)
 ### Added
 - Consolidated `convex/` directory from VPS `isekai-legion` project into dashboard

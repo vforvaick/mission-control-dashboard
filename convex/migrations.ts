@@ -1,7 +1,7 @@
-import { mutation } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 
 // One-time migration: Add layer, source, emoji to existing agents
-export const migrateAgentFields = mutation({
+export const migrateAgentFields = internalMutation({
     args: {},
     handler: async (ctx) => {
         const agents = await ctx.db.query("agents").collect();
@@ -42,7 +42,7 @@ export const migrateAgentFields = mutation({
                 // Also strip @ from handle if present
                 const cleanHandle = agent.handle.replace(/^@/, "");
                 await ctx.db.patch(agent._id, {
-                    layer: meta.layer as any,
+                    layer: meta.layer as "strategic" | "analyst" | "lead" | "specialist",
                     source: meta.source,
                     emoji: meta.emoji,
                     handle: cleanHandle,

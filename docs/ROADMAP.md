@@ -17,7 +17,6 @@ A real-time mission control dashboard for the Isekai Crossover Legion — monito
 - [ ] Inter-agent message viewer (agentMessages table)
 - [ ] Threaded comments on tasks
 - [ ] Board switching/filtering in Kanban view
-- [ ] User authentication (Clerk or Convex Auth)
 
 ### Low Priority
 - [ ] Agent avatar images (AI-generated anime portraits)
@@ -45,6 +44,7 @@ A real-time mission control dashboard for the Isekai Crossover Legion — monito
   - Effort: Small refactor to derive from boards query
 
 ## Recently Completed
+- **Security & Type Safety Audit Repairs** (2026-02-10) — GitHub Auth, Input Validation, Security Headers, Strict Types
 - Convex integration — all mock data replaced with live queries (2026-02-10)
 - Agent migration — layer, source, emoji fields added (2026-02-10)
 - Task seeding — 14 tasks across 4 boards (2026-02-10)

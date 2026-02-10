@@ -5,6 +5,7 @@ import { ConvexProvider } from "@/lib/convex";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
+import { AuthGuard } from "@/components/auth/auth-guard";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,17 +34,19 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
         <ConvexProvider>
-          <TooltipProvider>
-            <div className="flex min-h-screen">
-              <Sidebar />
-              <div className="flex-1 flex flex-col ml-64">
-                <Header />
-                <main className="flex-1 p-6 pt-20">
-                  {children}
-                </main>
+          <AuthGuard>
+            <TooltipProvider>
+              <div className="flex min-h-screen">
+                <Sidebar />
+                <div className="flex-1 flex flex-col ml-64">
+                  <Header />
+                  <main className="flex-1 p-6 pt-20">
+                    {children}
+                  </main>
+                </div>
               </div>
-            </div>
-          </TooltipProvider>
+            </TooltipProvider>
+          </AuthGuard>
         </ConvexProvider>
       </body>
     </html>

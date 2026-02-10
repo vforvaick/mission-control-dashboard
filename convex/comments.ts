@@ -29,6 +29,9 @@ export const create = mutation({
         mentions: v.optional(v.array(v.id("agents"))),
     },
     handler: async (ctx, args) => {
+        if (args.content.length > 5000) throw new Error("Comment too long (max 5000 chars)");
+        if (args.mentions && args.mentions.length > 20) throw new Error("Too many mentions (max 20)");
+
         const commentId = await ctx.db.insert("comments", {
             ...args,
             createdAt: Date.now(),

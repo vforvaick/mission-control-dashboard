@@ -3,6 +3,7 @@
 export type TaskStatus = "backlog" | "todo" | "in_progress" | "review" | "done";
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
 export type AgentStatus = "online" | "busy" | "idle" | "offline";
+export type AgentLayer = "strategic" | "analyst" | "lead" | "specialist";
 
 export type Domain = "Office" | "Trading" | "Personal" | "Deployment";
 
@@ -27,42 +28,14 @@ export interface Agent {
     name: string;
     source: string;
     role: string;
-    layer: "strategic" | "secretary" | "tactical" | "operational";
+    layer: AgentLayer;
     status: AgentStatus;
     currentTaskId?: string;
     lastHeartbeat?: string;
     skills: string[];
-    domains: Domain[];
+    domains: string[];
     personality?: string;
     emoji?: string;
-}
-
-export interface Board {
-    _id: string;
-    name: string;
-    domain: Domain;
-    description?: string;
-    taskCount: number;
-}
-
-export interface ActivityItem {
-    _id: string;
-    type: "task_created" | "task_moved" | "task_completed" | "agent_claimed" | "agent_released" | "comment" | "mention";
-    agentHandle?: string;
-    taskId?: string;
-    taskTitle?: string;
-    message: string;
-    timestamp: string;
-    metadata?: Record<string, unknown>;
-}
-
-export interface Comment {
-    _id: string;
-    taskId: string;
-    authorHandle: string;
-    content: string;
-    createdAt: string;
-    mentions?: string[];
 }
 
 // Agent persona colors for avatar backgrounds

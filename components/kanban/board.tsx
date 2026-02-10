@@ -87,7 +87,7 @@ export function KanbanBoard() {
             completedAt: t.completedAt ? new Date(t.completedAt).toISOString() : undefined,
             boardId: t.boardId,
         }));
-    }, [rawTasks, agentMap]);
+    }, [rawTasks, agentMap, boardDomainMap]);
 
     const tasksByColumn = useMemo(() => {
         return columns.reduce((acc, column) => {
