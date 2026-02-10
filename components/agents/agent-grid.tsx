@@ -1,219 +1,115 @@
 "use client";
 
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { AgentCard } from "./agent-card";
-import { Agent } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock agent data - will be replaced with Convex real-time data
-const agents: Agent[] = [
-    {
-        _id: "1",
-        handle: "lelouch",
-        name: "Lelouch vi Britannia",
-        source: "Code Geass",
-        role: "Supreme Strategist",
-        layer: "strategic",
-        status: "online",
-        skills: ["strategy", "orchestration", "crisis-management"],
-        domains: ["Office", "Trading", "Personal", "Deployment"],
-        personality: "Commanding charisma, strategic brilliance",
-        emoji: "♟️",
-    },
-    {
-        _id: "2",
-        handle: "cc",
-        name: "C.C.",
-        source: "Code Geass",
-        role: "Chief of Staff",
-        layer: "secretary",
-        status: "online",
-        skills: ["logistics", "data-fetching", "memory"],
-        domains: ["Office", "Personal"],
-        personality: "Mysterious accomplice, efficient",
-        emoji: "🍕",
-    },
-    {
-        _id: "3",
-        handle: "lena",
-        name: "Vladilena Milizé",
-        source: "86",
-        role: "Office Lead",
-        layer: "tactical",
-        status: "busy",
-        currentTaskId: "task-123",
-        skills: ["office-ops", "coordination", "documentation"],
-        domains: ["Office"],
-        personality: "Dedicated, empathetic leader",
-        emoji: "💼",
-    },
-    {
-        _id: "4",
-        handle: "shiroe",
-        name: "Shiroe",
-        source: "Log Horizon",
-        role: "Trading Lead",
-        layer: "tactical",
-        status: "idle",
-        skills: ["trading", "analysis", "market-research"],
-        domains: ["Trading"],
-        personality: "Calculating strategist",
-        emoji: "📊",
-    },
-    {
-        _id: "5",
-        handle: "ainz",
-        name: "Ainz Ooal Gown",
-        source: "Overlord",
-        role: "Personal Lead",
-        layer: "tactical",
-        status: "online",
-        skills: ["personal-ops", "learning", "project-management"],
-        domains: ["Personal"],
-        personality: "Supreme being, cautious ruler",
-        emoji: "💀",
-    },
-    {
-        _id: "6",
-        handle: "meliodas",
-        name: "Meliodas",
-        source: "Seven Deadly Sins",
-        role: "Deployment Lead",
-        layer: "tactical",
-        status: "busy",
-        currentTaskId: "task-456",
-        skills: ["infrastructure", "deployment", "devops"],
-        domains: ["Deployment"],
-        personality: "Fearless, unstoppable",
-        emoji: "⚔️",
-    },
-    {
-        _id: "7",
-        handle: "killua",
-        name: "Killua Zoldyck",
-        source: "Hunter x Hunter",
-        role: "Backend Specialist",
-        layer: "operational",
-        status: "online",
-        skills: ["backend", "apis", "databases"],
-        domains: ["Deployment", "Office"],
-        personality: "Lightning fast executor",
-        emoji: "⚡",
-    },
-    {
-        _id: "8",
-        handle: "yor",
-        name: "Yor Forger",
-        source: "Spy x Family",
-        role: "Frontend Specialist",
-        layer: "operational",
-        status: "busy",
-        currentTaskId: "task-789",
-        skills: ["frontend", "ui-ux", "design"],
-        domains: ["Deployment"],
-        personality: "Elegant assassin, precise",
-        emoji: "🌹",
-    },
-    {
-        _id: "9",
-        handle: "rimuru",
-        name: "Rimuru Tempest",
-        source: "That Time I Got Reincarnated as a Slime",
-        role: "Data Analyst",
-        layer: "operational",
-        status: "idle",
-        skills: ["data-analysis", "visualization", "etl"],
-        domains: ["Trading"],
-        personality: "Adaptable, absorbs knowledge",
-        emoji: "🔮",
-    },
-    {
-        _id: "10",
-        handle: "albedo",
-        name: "Albedo",
-        source: "Overlord",
-        role: "Admin Specialist",
-        layer: "operational",
-        status: "online",
-        skills: ["documentation", "admin", "organization"],
-        domains: ["Office"],
-        personality: "Devoted, perfectionist",
-        emoji: "📋",
-    },
-    {
-        _id: "11",
-        handle: "kazuma",
-        name: "Kazuma Satou",
-        source: "KonoSuba",
-        role: "QA Specialist",
-        layer: "operational",
-        status: "offline",
-        skills: ["testing", "quality-assurance", "debugging"],
-        domains: ["Deployment"],
-        personality: "Pessimistic but lucky",
-        emoji: "🎯",
-    },
-    {
-        _id: "12",
-        handle: "senku",
-        name: "Senku Ishigami",
-        source: "Dr. Stone",
-        role: "Research Specialist",
-        layer: "operational",
-        status: "busy",
-        currentTaskId: "task-research",
-        skills: ["research", "experiments", "science"],
-        domains: ["Office", "Trading", "Personal", "Deployment"],
-        personality: "Ten billion percent genius",
-        emoji: "🧪",
-    },
-    {
-        _id: "13",
-        handle: "demiurge",
-        name: "Demiurge",
-        source: "Overlord",
-        role: "Security Auditor",
-        layer: "operational",
-        status: "online",
-        skills: ["security", "auditing", "vulnerability-scanning"],
-        domains: ["Deployment"],
-        personality: "Paranoid, detail-oriented",
-        emoji: "🛡️",
-    },
-];
-
-const layerLabels = {
+const layerMap: Record<string, { label: string; color: string }> = {
     strategic: { label: "Strategic", color: "bg-primary text-primary-foreground" },
-    secretary: { label: "Secretary", color: "bg-accent text-accent-foreground" },
-    tactical: { label: "Tactical", color: "bg-purple-500 text-white" },
-    operational: { label: "Operational", color: "bg-blue-500 text-white" },
+    analyst: { label: "Analyst", color: "bg-accent text-accent-foreground" },
+    lead: { label: "Lead", color: "bg-purple-500 text-white" },
+    specialist: { label: "Specialist", color: "bg-blue-500 text-white" },
 };
 
+// Map Convex agent status to dashboard status
+function mapStatus(status: string): "online" | "busy" | "idle" | "offline" {
+    switch (status) {
+        case "online": return "online";
+        case "working": return "busy";
+        case "idle": return "idle";
+        case "sleeping": return "offline";
+        case "offline": return "offline";
+        default: return "offline";
+    }
+}
+
 export function AgentGrid() {
-    const groupedAgents = {
-        strategic: agents.filter((a) => a.layer === "strategic"),
-        secretary: agents.filter((a) => a.layer === "secretary"),
-        tactical: agents.filter((a) => a.layer === "tactical"),
-        operational: agents.filter((a) => a.layer === "operational"),
-    };
+    const agents = useQuery(api.agents.list);
+    const boards = useQuery(api.boards.list);
+
+    if (!agents || !boards) {
+        return (
+            <div className="space-y-8">
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="space-y-4">
+                        <Skeleton className="h-8 w-48" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {[1, 2].map((j) => (
+                                <Skeleton key={j} className="h-48 w-full rounded-xl" />
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    // Build board name map for domain display
+    const boardNameMap: Record<string, string> = {};
+    for (const b of boards) {
+        boardNameMap[b._id] = b.name.replace(/ (Operations|Console|Center|Life)$/, "");
+    }
+
+    // Map Convex agents to dashboard Agent type
+    const mappedAgents = agents.map((a) => ({
+        _id: a._id,
+        handle: a.handle.replace(/^@/, ""), // Strip @ if present
+        name: a.name,
+        source: (a as any).source || "Unknown",
+        role: a.role,
+        layer: (a as any).layer || deriveLayer(a.role),
+        status: mapStatus(a.status),
+        currentTaskId: a.currentTaskId ? String(a.currentTaskId) : undefined,
+        lastHeartbeat: a.lastHeartbeat ? new Date(a.lastHeartbeat).toISOString() : undefined,
+        skills: [] as string[], // Could be extended later
+        domains: a.boardIds.map((id) => boardNameMap[id] || "Unknown"),
+        personality: a.personality,
+        emoji: (a as any).emoji || "🤖",
+    }));
+
+    // Group by layer
+    const layerOrder = ["strategic", "analyst", "lead", "specialist"];
+    const grouped: Record<string, typeof mappedAgents> = {};
+    for (const agent of mappedAgents) {
+        const layer = agent.layer as string;
+        if (!grouped[layer]) grouped[layer] = [];
+        grouped[layer].push(agent);
+    }
 
     return (
         <div className="space-y-8">
-            {Object.entries(groupedAgents).map(([layer, layerAgents]) => (
-                <div key={layer} className="space-y-4">
-                    <div className="flex items-center gap-3">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${layerLabels[layer as keyof typeof layerLabels].color}`}>
-                            {layerLabels[layer as keyof typeof layerLabels].label} Layer
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                            {layerAgents.length} {layerAgents.length === 1 ? "agent" : "agents"}
-                        </span>
+            {layerOrder.map((layer) => {
+                const layerAgents = grouped[layer];
+                if (!layerAgents || layerAgents.length === 0) return null;
+                const info = layerMap[layer] || { label: layer, color: "bg-zinc-500 text-white" };
+                return (
+                    <div key={layer} className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${info.color}`}>
+                                {info.label} Layer
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                                {layerAgents.length} {layerAgents.length === 1 ? "agent" : "agents"}
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {layerAgents.map((agent) => (
+                                <AgentCard key={agent._id} agent={agent as any} />
+                            ))}
+                        </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {layerAgents.map((agent) => (
-                            <AgentCard key={agent._id} agent={agent} />
-                        ))}
-                    </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
+}
+
+// Derive layer from role name if not in DB
+function deriveLayer(role: string): string {
+    const r = role.toLowerCase();
+    if (r.includes("strategist") || r.includes("supreme")) return "strategic";
+    if (r.includes("chief") || r.includes("staff") || r.includes("analyst")) return "analyst";
+    if (r.includes("lead")) return "lead";
+    return "specialist";
 }

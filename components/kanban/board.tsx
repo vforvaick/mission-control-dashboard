@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import {
     DndContext,
     DragOverlay,
@@ -13,76 +16,13 @@ import {
     DragEndEvent,
     DragOverEvent,
 } from "@dnd-kit/core";
-import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { KanbanColumn } from "./column";
 import { TaskCard } from "./task-card";
 import { Task, TaskStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw } from "lucide-react";
-
-// Mock data for now - will be replaced with Convex real-time data
-const initialTasks: Task[] = [
-    {
-        _id: "1",
-        title: "Set up project infrastructure",
-        description: "Initialize Next.js project with all dependencies",
-        status: "done",
-        priority: "high",
-        domain: "Deployment",
-        assignedTo: "killua",
-        createdAt: new Date().toISOString(),
-    },
-    {
-        _id: "2",
-        title: "Design agent avatar system",
-        description: "Create 13 unique anime-style portraits for each agent",
-        status: "in_progress",
-        priority: "medium",
-        domain: "Personal",
-        assignedTo: "yor",
-        createdAt: new Date().toISOString(),
-    },
-    {
-        _id: "3",
-        title: "Implement real-time sync",
-        description: "Connect Convex backend for live task updates",
-        status: "todo",
-        priority: "high",
-        domain: "Deployment",
-        assignedTo: "killua",
-        createdAt: new Date().toISOString(),
-    },
-    {
-        _id: "4",
-        title: "Review trading strategy",
-        description: "Analyze market conditions and adjust parameters",
-        status: "todo",
-        priority: "urgent",
-        domain: "Trading",
-        assignedTo: "shiroe",
-        createdAt: new Date().toISOString(),
-    },
-    {
-        _id: "5",
-        title: "Update documentation",
-        description: "Complete API documentation for new endpoints",
-        status: "review",
-        priority: "medium",
-        domain: "Office",
-        assignedTo: "albedo",
-        createdAt: new Date().toISOString(),
-    },
-    {
-        _id: "6",
-        title: "Security audit",
-        description: "Run vulnerability scan on production services",
-        status: "in_progress",
-        priority: "high",
-        domain: "Deployment",
-        assignedTo: "demiurge",
-        createdAt: new Date().toISOString(),
-    },
-];
+import { RefreshCw, Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const columns: { id: TaskStatus; title: string; color: string }[] = [
     { id: "backlog", title: "Backlog", color: "bg-zinc-500" },
@@ -93,19 +33,61 @@ const columns: { id: TaskStatus; title: string; color: string }[] = [
 ];
 
 export function KanbanBoard() {
-    const [tasks, setTasks] = useState<Task[]>(initialTasks);
+    const rawTasks = useQuery(api.tasks.list, {});
+    const agents = useQuery(api.agents.list);
+    const boards = useQuery(api.boards.list);
+    const moveTask = useMutation(api.tasks.move);
     const [activeTask, setActiveTask] = useState<Task | null>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
+            activationConstraint: { distance: 8 },
         }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })
     );
+
+    // Build agent handle map for display
+    const agentMap = useMemo(() => {
+        const map: Record<string, string> = {};
+        if (agents) {
+            for (const a of agents) {
+                map[a._id] = a.handle.replace(/^@/, "");
+            }
+        }
+        return map;
+    }, [agents]);
+
+    // Build board→domain map
+    const boardDomainMap = useMemo(() => {
+        const map: Record<string, string> = {};
+        if (boards) {
+            for (const b of boards) {
+                // "Office Operations" → "Office", "Trading Console" → "Trading"
+                map[b._id] = b.name.split(" ")[0];
+            }
+        }
+        return map;
+    }, [boards]);
+
+    // Map Convex tasks to dashboard Task type
+    const tasks: Task[] = useMemo(() => {
+        if (!rawTasks) return [];
+        return rawTasks.map((t) => ({
+            _id: t._id,
+            title: t.title,
+            description: t.description,
+            status: t.status as TaskStatus,
+            priority: t.priority as Task["priority"],
+            domain: (boardDomainMap[t.boardId] || "Office") as Task["domain"],
+            assignedTo: t.assigneeId ? agentMap[t.assigneeId] : undefined,
+            createdAt: new Date(t.createdAt).toISOString(),
+            updatedAt: t.updatedAt ? new Date(t.updatedAt).toISOString() : undefined,
+            completedAt: t.completedAt ? new Date(t.completedAt).toISOString() : undefined,
+            boardId: t.boardId,
+        }));
+    }, [rawTasks, agentMap]);
 
     const tasksByColumn = useMemo(() => {
         return columns.reduce((acc, column) => {
@@ -114,70 +96,56 @@ export function KanbanBoard() {
         }, {} as Record<TaskStatus, Task[]>);
     }, [tasks]);
 
+    if (!rawTasks) {
+        return (
+            <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                    <Skeleton className="h-7 w-32" />
+                    <Skeleton className="h-5 w-16" />
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-4">
+                    {columns.map((col) => (
+                        <Skeleton key={col.id} className="min-w-[280px] h-96 rounded-xl" />
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
     function handleDragStart(event: DragStartEvent) {
         const task = tasks.find((t) => t._id === event.active.id);
-        if (task) {
-            setActiveTask(task);
-        }
+        if (task) setActiveTask(task);
     }
 
     function handleDragOver(event: DragOverEvent) {
-        const { active, over } = event;
-        if (!over) return;
-
-        const activeId = active.id as string;
-        const overId = over.id as string;
-
-        const activeTask = tasks.find((t) => t._id === activeId);
-        if (!activeTask) return;
-
-        // Check if dropping on a column
-        const overColumn = columns.find((col) => col.id === overId);
-        if (overColumn) {
-            setTasks((prev) =>
-                prev.map((task) =>
-                    task._id === activeId ? { ...task, status: overColumn.id } : task
-                )
-            );
-            return;
-        }
-
-        // Check if dropping on another task
-        const overTask = tasks.find((t) => t._id === overId);
-        if (overTask && activeTask.status !== overTask.status) {
-            setTasks((prev) =>
-                prev.map((task) =>
-                    task._id === activeId ? { ...task, status: overTask.status } : task
-                )
-            );
-        }
+        // Visual feedback only — actual move happens on drag end
     }
 
-    function handleDragEnd(event: DragEndEvent) {
+    async function handleDragEnd(event: DragEndEvent) {
         setActiveTask(null);
-
         const { active, over } = event;
         if (!over) return;
 
         const activeId = active.id as string;
         const overId = over.id as string;
 
-        if (activeId === overId) return;
+        const draggedTask = tasks.find((t) => t._id === activeId);
+        if (!draggedTask) return;
 
-        const activeTask = tasks.find((t) => t._id === activeId);
+        // Determine target column
+        const overColumn = columns.find((col) => col.id === overId);
         const overTask = tasks.find((t) => t._id === overId);
+        const targetStatus = overColumn?.id || overTask?.status;
 
-        if (activeTask && overTask && activeTask.status === overTask.status) {
-            const columnTasks = tasksByColumn[activeTask.status];
-            const activeIndex = columnTasks.findIndex((t) => t._id === activeId);
-            const overIndex = columnTasks.findIndex((t) => t._id === overId);
-
-            const newOrder = arrayMove(columnTasks, activeIndex, overIndex);
-
-            setTasks((prev) => {
-                const otherTasks = prev.filter((t) => t.status !== activeTask.status);
-                return [...otherTasks, ...newOrder];
-            });
+        if (targetStatus && targetStatus !== draggedTask.status) {
+            try {
+                await moveTask({
+                    id: activeId as Id<"tasks">,
+                    status: targetStatus,
+                });
+            } catch (err) {
+                console.error("Failed to move task:", err);
+            }
         }
     }
 
