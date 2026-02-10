@@ -29,6 +29,39 @@ export const getById = query({
     },
 });
 
+export const getWithTasks = query({
+    args: { handle: v.string() },
+    handler: async (ctx, args) => {
+        const cleanHandle = args.handle.replace(/^@/, "");
+        const agent = await ctx.db
+            .query("agents")
+            .withIndex("by_handle", (q) => q.eq("handle", cleanHandle))
+            .first();
+        if (!agent) return null;
+
+        const assignedTasks = await ctx.db
+            .query("tasks")
+            .withIndex("by_assignee", (q) => q.eq("assigneeId", agent._id))
+            .collect();
+
+        const recentRaw = await ctx.db
+            .query("activity")
+            .withIndex("by_time")
+            .order("desc")
+            .take(200);
+
+        const recentActivity = recentRaw
+            .filter((entry) =>
+                entry.actorId === agent._id ||
+                entry.actorId === agent.handle ||
+                entry.actorId === `@${agent.handle}`
+            )
+            .slice(0, 20);
+
+        return { agent, tasks: assignedTasks, activity: recentActivity };
+    },
+});
+
 // ═══════════════════════════════════════════════════════════
 // MUTATIONS
 // ═══════════════════════════════════════════════════════════

@@ -23,6 +23,7 @@ import {
 interface TaskCardProps {
     task: Task;
     isDragging?: boolean;
+    onClick?: (task: Task) => void;
 }
 
 const domainEmojis: Record<string, string> = {
@@ -32,7 +33,7 @@ const domainEmojis: Record<string, string> = {
     Deployment: "🚀",
 };
 
-export function TaskCard({ task, isDragging }: TaskCardProps) {
+export function TaskCard({ task, isDragging, onClick }: TaskCardProps) {
     const {
         attributes,
         listeners,
@@ -54,18 +55,26 @@ export function TaskCard({ task, isDragging }: TaskCardProps) {
             ref={setNodeRef}
             style={style}
             className={cn(
-                "group cursor-grab active:cursor-grabbing transition-all duration-200 border-border/50 bg-card hover:border-border hover:bg-card/80",
+                "group cursor-default transition-all duration-200 border-border/50 bg-card hover:border-border hover:bg-card/80",
                 isActive && "dragging opacity-50 rotate-2 z-50",
                 task.priority === "urgent" && "border-l-2 border-l-primary"
             )}
-            {...attributes}
-            {...listeners}
+            onClick={() => onClick?.(task)}
         >
             <CardContent className="p-3 space-y-3">
                 {/* Header with drag handle and domain */}
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <GripVertical className="h-4 w-4 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                        <button
+                            type="button"
+                            className="h-5 w-5 rounded text-muted-foreground/50 opacity-0 group-hover:opacity-100 hover:text-muted-foreground transition-opacity flex items-center justify-center cursor-grab active:cursor-grabbing"
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label="Drag task"
+                            {...attributes}
+                            {...listeners}
+                        >
+                            <GripVertical className="h-4 w-4" />
+                        </button>
                         <Badge
                             variant="outline"
                             className="text-[10px] px-1.5 py-0 border-muted-foreground/20"

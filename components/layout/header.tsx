@@ -10,13 +10,16 @@ import { Badge } from "@/components/ui/badge";
 const pageNames: Record<string, string> = {
     "/": "Kanban Board",
     "/agents": "Agent Status",
+    "/messages": "Agent Messages",
     "/activity": "Activity Feed",
     "/settings": "Settings",
 };
 
 export function Header() {
     const pathname = usePathname();
-    const pageName = pageNames[pathname] || "Dashboard";
+    const pageName = pathname.startsWith("/agents/")
+        ? "Agent Detail"
+        : (pageNames[pathname] || "Dashboard");
 
     return (
         <header className="fixed top-0 left-64 right-0 z-30 h-16 border-b border-border bg-background/80 backdrop-blur-xl">

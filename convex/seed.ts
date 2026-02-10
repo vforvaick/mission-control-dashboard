@@ -148,7 +148,7 @@ export const defaultSeed = internalMutation({
         source: "That Time I Got Reincarnated as a Slime",
         emoji: "🔮",
         boardIds: [tradingBoard],
-        status: "sleeping" as const,
+        status: "idle" as const,
       },
       {
         name: "Albedo",
@@ -178,7 +178,7 @@ export const defaultSeed = internalMutation({
         source: "Dr. Stone",
         emoji: "🧪",
         boardIds: [deploymentBoard, tradingBoard, officeBoard, personalBoard],
-        status: "sleeping" as const,
+        status: "idle" as const,
       },
       {
         name: "Demiurge",
@@ -188,7 +188,7 @@ export const defaultSeed = internalMutation({
         source: "Overlord",
         emoji: "🛡️",
         boardIds: [deploymentBoard],
-        status: "sleeping" as const,
+        status: "idle" as const,
       },
     ];
 

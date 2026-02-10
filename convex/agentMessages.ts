@@ -27,6 +27,20 @@ export const listSent = query({
     },
 });
 
+export const listAll = query({
+    args: {
+        limit: v.optional(v.number()),
+    },
+    handler: async (ctx, args) => {
+        const limit = Math.min(args.limit ?? 200, 500);
+        return await ctx.db
+            .query("agentMessages")
+            .withIndex("by_time")
+            .order("desc")
+            .take(limit);
+    },
+});
+
 // ═══════════════════════════════════════════════════════════
 // MUTATIONS
 // ═══════════════════════════════════════════════════════════

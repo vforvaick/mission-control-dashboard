@@ -43,6 +43,19 @@ Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
 ```
 
+## VPS Canonical Path
+
+Use only this project path on `fight-uno`:
+
+```bash
+/home/vforvaick/.openclaw/workspace/mission-control-dashboard
+```
+
+Path policy:
+- Canonical: `/home/vforvaick/.openclaw/workspace/mission-control-dashboard`
+- Legacy path `~/projects/isekai-legion` is retired
+- Keep Convex + frontend + docs in the same canonical directory
+
 ## Project Structure
 
 ```
@@ -62,26 +75,27 @@ mission-control-dashboard/
 │   ├── convex.tsx          # Convex client
 │   ├── types.ts            # TypeScript definitions
 │   └── utils.ts            # shadcn utilities
+├── docs/                   # Full system documentation (Specs, Architecture, Roadmap)
 └── public/avatars/         # Agent portraits
+
 ```
 
 ## Agent Roster
 
-| Layer | Agent | Role |
-|-------|-------|------|
-| Strategic | @lelouch | Supreme Strategist |
-| Secretary | @cc | Chief of Staff |
-| Tactical | @lena | Office Lead |
-| Tactical | @shiroe | Trading Lead |
-| Tactical | @ainz | Personal Lead |
-| Tactical | @meliodas | Deployment Lead |
-| Operational | @killua | Backend Specialist |
-| Operational | @yor | Frontend Specialist |
-| Operational | @rimuru | Data Analyst |
-| Operational | @albedo | Admin Specialist |
-| Operational | @kazuma | QA Specialist |
-| Operational | @senku | Research Specialist |
-| Operational | @demiurge | Security Auditor |
+**Active Roster (7 Agents)**
+
+| Layer | Agent | Role | Status |
+|-------|-------|------|--------|
+| Strategic | @lelouch | Supreme Strategist + PA | Active |
+| Analyst | @cc | Silent Analyst | Active |
+| Lead | @meliodas | DevOps Lead | Active |
+| Lead | @shiroe | Trading Architect | Active |
+| Specialist | @demiurge | Security Auditor | Active |
+| Specialist | @rimuru | Data Engineer | Active |
+| Specialist | @senku | Research Specialist | Active |
+
+**Dormant (Spawn on Demand)**: @killua, @yor, @lena, @ainz, @albedo, @kazuma
+
 
 ## Deployment
 
@@ -92,5 +106,5 @@ mission-control-dashboard/
 
 ## References
 
-- Backend Reference: `mission-control-reference/`
+- Full Documentation: [docs/](docs/)
 - Convex Dashboard: https://dashboard.convex.dev/d/ceaseless-bullfrog-373

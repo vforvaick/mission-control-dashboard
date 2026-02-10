@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { agentColors } from "@/lib/types";
@@ -110,21 +110,11 @@ export function ActivityFeed() {
         return map;
     }, [agents]);
 
-    const taskTitleMap = useMemo(() => {
-        const map: Record<string, string> = {};
-        if (tasks) {
-            for (const t of tasks) {
-                map[t._id] = t.title;
-            }
-        }
-        return map;
-    }, [tasks]);
-
     // Derive stats from live data
     const stats = useMemo(() => {
         if (!rawActivities || !agents || !tasks) return null;
-        const now = Date.now();
-        const today = now - 24 * 60 * 60 * 1000;
+        const latestTimestamp = rawActivities[0]?.createdAt ?? 0;
+        const today = latestTimestamp - 24 * 60 * 60 * 1000;
         const todayActivities = rawActivities.filter((a) => a.createdAt > today);
 
         return {

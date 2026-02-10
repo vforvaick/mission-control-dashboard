@@ -6,9 +6,9 @@ import {
     LayoutDashboard,
     Users,
     Activity,
+    MessageSquare,
     Settings,
-    Zap,
-    Target
+    Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,7 @@ const navigation = [
     { name: "Kanban", href: "/", icon: LayoutDashboard },
     { name: "Agents", href: "/agents", icon: Users },
     { name: "Activity", href: "/activity", icon: Activity },
+    { name: "Messages", href: "/messages", icon: MessageSquare },
 ];
 
 const domains = [
@@ -50,7 +51,9 @@ export function Sidebar() {
                     Navigation
                 </p>
                 {navigation.map((item) => {
-                    const isActive = pathname === item.href;
+                    const isActive = item.href === "/"
+                        ? pathname === "/"
+                        : pathname === item.href || pathname.startsWith(`${item.href}/`);
                     return (
                         <Link
                             key={item.name}

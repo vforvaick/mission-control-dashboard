@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Agent, agentColors, agentStatusColors } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Zap,
-    Clock,
     Briefcase,
     ExternalLink
 } from "lucide-react";
@@ -16,6 +16,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { HeartbeatIndicator } from "./heartbeat-indicator";
 
 interface AgentCardProps {
     agent: Agent;
@@ -55,10 +56,14 @@ export function AgentCard({ agent }: AgentCardProps) {
                     {/* Info */}
                     <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-foreground truncate">{agent.name}</h3>
+                            <Link href={`/agents/${agent.handle}`} className="font-semibold text-foreground truncate hover:text-primary transition-colors">
+                                {agent.name}
+                            </Link>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>@{agent.handle}</span>
+                            <Link href={`/agents/${agent.handle}`} className="hover:text-primary transition-colors">
+                                @{agent.handle}
+                            </Link>
                             <span className="text-muted-foreground/30">•</span>
                             <span className="truncate">{agent.source}</span>
                         </div>
@@ -83,19 +88,18 @@ export function AgentCard({ agent }: AgentCardProps) {
                             {statusLabel[agent.status]}
                         </Badge>
 
-                        {agent.lastHeartbeat && (
+                        {agent.lastHeartbeat ? (
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                        <Clock className="h-3 w-3" />
-                                        <span>1m ago</span>
+                                    <div>
+                                        <HeartbeatIndicator lastHeartbeat={new Date(agent.lastHeartbeat).getTime()} />
                                     </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
                                     <p>Last heartbeat</p>
                                 </TooltipContent>
                             </Tooltip>
-                        )}
+                        ) : null}
                     </div>
 
                     {/* Current Task */}

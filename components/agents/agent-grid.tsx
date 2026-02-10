@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { AgentCard } from "./agent-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Agent, AgentLayer, AgentStatus } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ChevronDown, ChevronRight, Moon } from "lucide-react";
 
 const layerMap: Record<string, { label: string; color: string }> = {
     strategic: { label: "Strategic", color: "bg-primary text-primary-foreground" },
@@ -37,6 +41,7 @@ function deriveLayer(role: string): AgentLayer {
 export function AgentGrid() {
     const agents = useQuery(api.agents.list);
     const boards = useQuery(api.boards.list);
+    const [showDormant, setShowDormant] = useState(false);
 
     if (!agents || !boards) {
         return (
@@ -62,7 +67,7 @@ export function AgentGrid() {
     }
 
     // Map Convex agents to dashboard Agent type
-    const mappedAgents: Agent[] = agents.map((a) => ({
+    const mappedAgents: (Agent & { dormant: boolean })[] = agents.map((a) => ({
         _id: a._id,
         handle: a.handle.replace(/^@/, ""), // Strip @ if present
         name: a.name,
@@ -72,16 +77,20 @@ export function AgentGrid() {
         status: mapStatus(a.status),
         currentTaskId: a.currentTaskId ? String(a.currentTaskId) : undefined,
         lastHeartbeat: a.lastHeartbeat ? new Date(a.lastHeartbeat).toISOString() : undefined,
-        skills: [] as string[], // Could be extended later
+        skills: a.skills ?? [],
         domains: a.boardIds.map((id) => boardNameMap[id] || "Unknown"),
         personality: a.personality,
         emoji: a.emoji ?? "🤖",
+        dormant: a.dormant ?? false,
     }));
+
+    const activeAgents = mappedAgents.filter((a) => !a.dormant);
+    const dormantAgents = mappedAgents.filter((a) => a.dormant);
 
     // Group by layer
     const layerOrder: AgentLayer[] = ["strategic", "analyst", "lead", "specialist"];
     const grouped: Record<string, Agent[]> = {};
-    for (const agent of mappedAgents) {
+    for (const agent of activeAgents) {
         if (!grouped[agent.layer]) grouped[agent.layer] = [];
         grouped[agent.layer].push(agent);
     }
@@ -110,6 +119,39 @@ export function AgentGrid() {
                     </div>
                 );
             })}
+
+            {dormantAgents.length > 0 && (
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs border-zinc-500/40 text-zinc-400">
+                                <Moon className="h-3 w-3 mr-1" />
+                                Dormant
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                                {dormantAgents.length} agents
+                            </span>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => setShowDormant((prev) => !prev)}
+                        >
+                            {showDormant ? <ChevronDown className="h-4 w-4 mr-1" /> : <ChevronRight className="h-4 w-4 mr-1" />}
+                            {showDormant ? "Hide" : "Show"}
+                        </Button>
+                    </div>
+
+                    {showDormant && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 opacity-80">
+                            {dormantAgents.map((agent) => (
+                                <AgentCard key={agent._id} agent={agent} />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

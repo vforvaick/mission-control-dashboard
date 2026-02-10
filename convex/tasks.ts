@@ -6,8 +6,17 @@ import { v } from "convex/values";
 // ═══════════════════════════════════════════════════════════
 
 export const list = query({
-    args: { boardId: v.optional(v.id("boards")) },
+    args: {
+        boardId: v.optional(v.id("boards")),
+        parentTaskId: v.optional(v.id("tasks")),
+    },
     handler: async (ctx, args) => {
+        if (args.parentTaskId) {
+            return await ctx.db
+                .query("tasks")
+                .withIndex("by_parent", (q) => q.eq("parentTaskId", args.parentTaskId!))
+                .collect();
+        }
         if (args.boardId) {
             return await ctx.db
                 .query("tasks")
@@ -43,6 +52,16 @@ export const getByStatus = query({
     },
 });
 
+export const getSubTasks = query({
+    args: { parentTaskId: v.id("tasks") },
+    handler: async (ctx, args) => {
+        return await ctx.db
+            .query("tasks")
+            .withIndex("by_parent", (q) => q.eq("parentTaskId", args.parentTaskId))
+            .collect();
+    },
+});
+
 // ═══════════════════════════════════════════════════════════
 // MUTATIONS
 // ═══════════════════════════════════════════════════════════
@@ -52,6 +71,10 @@ export const create = mutation({
         boardId: v.id("boards"),
         title: v.string(),
         description: v.optional(v.string()),
+        createdBy: v.optional(v.union(v.id("agents"), v.literal("human"))),
+        parentTaskId: v.optional(v.id("tasks")),
+        acceptanceCriteria: v.optional(v.string()),
+        requiredSkills: v.optional(v.array(v.string())),
         priority: v.union(
             v.literal("low"),
             v.literal("medium"),
@@ -64,7 +87,9 @@ export const create = mutation({
     handler: async (ctx, args) => {
         if (args.title.length > 200) throw new Error("Title too long (max 200 chars)");
         if (args.description && args.description.length > 5000) throw new Error("Description too long (max 5000 chars)");
+        if (args.acceptanceCriteria && args.acceptanceCriteria.length > 5000) throw new Error("Acceptance criteria too long (max 5000 chars)");
         if (args.tags && args.tags.length > 20) throw new Error("Too many tags (max 20)");
+        if (args.requiredSkills && args.requiredSkills.length > 20) throw new Error("Too many required skills (max 20)");
 
         const existingTasks = await ctx.db
             .query("tasks")
@@ -77,6 +102,10 @@ export const create = mutation({
             boardId: args.boardId,
             title: args.title,
             description: args.description,
+            createdBy: args.createdBy,
+            parentTaskId: args.parentTaskId,
+            acceptanceCriteria: args.acceptanceCriteria,
+            requiredSkills: args.requiredSkills,
             status: "backlog",
             priority: args.priority,
             order,
@@ -93,8 +122,13 @@ export const create = mutation({
 export const update = mutation({
     args: {
         id: v.id("tasks"),
+        boardId: v.optional(v.id("boards")),
         title: v.optional(v.string()),
         description: v.optional(v.string()),
+        assigneeId: v.optional(v.id("agents")),
+        parentTaskId: v.optional(v.id("tasks")),
+        acceptanceCriteria: v.optional(v.string()),
+        requiredSkills: v.optional(v.array(v.string())),
         priority: v.optional(v.union(
             v.literal("low"),
             v.literal("medium"),
@@ -105,8 +139,24 @@ export const update = mutation({
         dueDate: v.optional(v.number()),
     },
     handler: async (ctx, args) => {
+        if (args.title && args.title.length > 200) throw new Error("Title too long (max 200 chars)");
+        if (args.description && args.description.length > 5000) throw new Error("Description too long (max 5000 chars)");
+        if (args.acceptanceCriteria && args.acceptanceCriteria.length > 5000) throw new Error("Acceptance criteria too long (max 5000 chars)");
+        if (args.tags && args.tags.length > 20) throw new Error("Too many tags (max 20)");
+        if (args.requiredSkills && args.requiredSkills.length > 20) throw new Error("Too many required skills (max 20)");
+
         const { id, ...updates } = args;
         await ctx.db.patch(id, { ...updates, updatedAt: Date.now() });
+        return { success: true };
+    },
+});
+
+export const remove = mutation({
+    args: { id: v.id("tasks") },
+    handler: async (ctx, args) => {
+        const task = await ctx.db.get(args.id);
+        if (!task) throw new Error("Task not found");
+        await ctx.db.delete(args.id);
         return { success: true };
     },
 });

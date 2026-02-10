@@ -45,6 +45,10 @@ export default defineSchema({
             v.literal("urgent")
         ),
         assigneeId: v.optional(v.id("agents")),
+        createdBy: v.optional(v.union(v.id("agents"), v.literal("human"))),
+        parentTaskId: v.optional(v.id("tasks")),
+        acceptanceCriteria: v.optional(v.string()),
+        requiredSkills: v.optional(v.array(v.string())),
         createdAt: v.number(),
         updatedAt: v.number(),
         claimedAt: v.optional(v.number()),
@@ -69,7 +73,9 @@ export default defineSchema({
         .index("by_board", ["boardId"])
         .index("by_board_status", ["boardId", "status"])
         .index("by_assignee", ["assigneeId"])
-        .index("by_status", ["status"]),
+        .index("by_status", ["status"])
+        .index("by_parent", ["parentTaskId"])
+        .index("by_creator", ["createdBy"]),
 
     // ═══════════════════════════════════════════════════════════
     // COMMENTS - Threaded discussions on tasks
@@ -102,6 +108,17 @@ export default defineSchema({
         )),
         source: v.optional(v.string()), // Anime origin
         emoji: v.optional(v.string()),
+        skills: v.optional(v.array(v.string())),
+        behavior: v.optional(v.string()),
+        dormant: v.optional(v.boolean()),
+        healthMetrics: v.optional(v.object({
+            tasksCompleted: v.number(),
+            tasksFailed: v.number(),
+            avgCompletionTime: v.number(),
+            contextResets: v.number(),
+            lastErrorAt: v.optional(v.number()),
+            updatedAt: v.number(),
+        })),
         personality: v.optional(v.string()),
         boardIds: v.array(v.id("boards")), // Assigned domains
         leadBoardId: v.optional(v.id("boards")), // For Area Leads
@@ -181,7 +198,8 @@ export default defineSchema({
         createdAt: v.number(),
     })
         .index("by_recipient", ["toAgentId", "acknowledged"])
-        .index("by_sender", ["fromAgentId"]),
+        .index("by_sender", ["fromAgentId"])
+        .index("by_time", ["createdAt"]),
 
     // ═══════════════════════════════════════════════════════════
     // RESOURCES - Long-term knowledge per board

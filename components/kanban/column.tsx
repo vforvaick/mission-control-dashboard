@@ -17,9 +17,11 @@ interface KanbanColumnProps {
     title: string;
     color: string;
     tasks: Task[];
+    onAddTask?: (status: TaskStatus) => void;
+    onTaskClick?: (task: Task) => void;
 }
 
-export function KanbanColumn({ id, title, color, tasks }: KanbanColumnProps) {
+export function KanbanColumn({ id, title, color, tasks, onAddTask, onTaskClick }: KanbanColumnProps) {
     const { setNodeRef, isOver } = useDroppable({ id });
 
     return (
@@ -39,7 +41,12 @@ export function KanbanColumn({ id, title, color, tasks }: KanbanColumnProps) {
                         {tasks.length}
                     </span>
                 </div>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                    onClick={() => onAddTask?.(id)}
+                >
                     <Plus className="h-4 w-4" />
                 </Button>
             </div>
@@ -49,7 +56,7 @@ export function KanbanColumn({ id, title, color, tasks }: KanbanColumnProps) {
                 <SortableContext items={tasks.map((t) => t._id)} strategy={verticalListSortingStrategy}>
                     <div className="space-y-3">
                         {tasks.map((task) => (
-                            <TaskCard key={task._id} task={task} />
+                            <TaskCard key={task._id} task={task} onClick={onTaskClick} />
                         ))}
 
                         {tasks.length === 0 && (

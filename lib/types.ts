@@ -5,7 +5,7 @@ export type TaskPriority = "low" | "medium" | "high" | "urgent";
 export type AgentStatus = "online" | "busy" | "idle" | "offline";
 export type AgentLayer = "strategic" | "analyst" | "lead" | "specialist";
 
-export type Domain = "Office" | "Trading" | "Personal" | "Deployment";
+export type Domain = "Office" | "Trading" | "Personal" | "Deployment" | string;
 
 export interface Task {
     _id: string;
@@ -20,6 +20,10 @@ export interface Task {
     completedAt?: string;
     executionLog?: string[];
     boardId?: string;
+    tags?: string[];
+    dueDate?: number;
+    acceptanceCriteria?: string;
+    requiredSkills?: string[];
 }
 
 export interface Agent {
@@ -36,6 +40,16 @@ export interface Agent {
     domains: string[];
     personality?: string;
     emoji?: string;
+    dormant?: boolean;
+    behavior?: string;
+    healthMetrics?: {
+        tasksCompleted: number;
+        tasksFailed: number;
+        avgCompletionTime: number;
+        contextResets: number;
+        lastErrorAt?: number;
+        updatedAt: number;
+    };
 }
 
 // Agent persona colors for avatar backgrounds

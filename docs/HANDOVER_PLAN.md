@@ -79,6 +79,13 @@ A real-time Kanban dashboard for the "Isekai Crossover Legion" — a multi-agent
 
 ## 3. Pre-Work: Environment Setup
 
+### Canonical VPS Workspace (mandatory)
+```bash
+/home/vforvaick/.openclaw/workspace/mission-control-dashboard
+```
+
+> Do not use legacy paths like `~/projects/isekai-legion`.
+
 ### Step 1: Clone and install
 ```bash
 git clone https://github.com/vforvaick/mission-control-dashboard.git
