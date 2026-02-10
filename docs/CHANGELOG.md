@@ -10,23 +10,47 @@
 - Live stats panel (completed, in-progress, new tasks, active agents) derived from real data
 - Loading skeletons for all 3 data-driven components
 - Support for all Convex `actionType` values in activity feed icons/colors
+- `layer`, `source`, `emoji` fields added to agent schema
+- Migration script to backfill existing 13 agents with new fields
+- Task seeder: 14 sample tasks across 4 boards with agent assignments
+- Board → domain mapping for task cards
+- `convex/migrations.ts` for one-time agent field migration
+- `convex/seedTasks.ts` for idempotent task seeding
 
 ### Changed
 - Removed mock data from `agent-grid.tsx`, `board.tsx`, `activity-feed.tsx`
 - Updated `.env.local` with `CONVEX_DEPLOYMENT` for type generation
 - Agent status mapping: Convex `working` → dashboard `busy`, `sleeping` → `offline`
 - Activity feed `formatTimeAgo` now accepts numeric timestamps (Convex format)
+- Stripped `@` prefix from agent handles in DB via migration
+
+### Verified
+- Build: `npx next build` ✅ (1358ms, zero errors)
+- Live: `mission-control-dashboard-amber.vercel.app` ✅
+- Kanban: 14 tasks visible across 5 columns
+- Agents: 13 agents grouped by layer (Strategic → Specialist)
+- Activity: Live feed with seed event + real-time stats
+- Convex: Schema pushed, agents migrated, tasks seeded on `ceaseless-bullfrog-373`
 
 ### Files Modified
 - `components/agents/agent-grid.tsx`
 - `components/kanban/board.tsx`
 - `components/activity/activity-feed.tsx`
 - `.env.local`
-- `convex/` (new directory — copied from VPS)
+- `convex/schema.ts` (added layer, source, emoji)
+- `convex/seed.ts` (updated with new fields)
+- `convex/seedTasks.ts` (new)
+- `convex/migrations.ts` (new)
 
 ### Reference
 - Convex deployment: `dev:ceaseless-bullfrog-373`
+- Dashboard URL: https://mission-control-dashboard-amber.vercel.app
 - Session: d339887d-4884-4500-bdb6-809a6c662b81
+
+### Discovered Issues
+- **Agent count mismatch**: Reference defines 7 active agents, DB has 13 (6 legacy from old VPS seed). Non-critical — extra agents show as offline/sleeping.
+  - Severity: Low
+  - Tracked: ROADMAP.md
 
 ## [2026-02-09] - Initial Dashboard Build
 ### Added
